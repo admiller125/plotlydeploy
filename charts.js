@@ -73,30 +73,87 @@ function buildCharts(sample) {
     var otuLabels = first.otu_labels;
     var otuValues = first.sample_values;
 
+
     // 7. Create the yticks for the bar chart.
     // Hint: Get the the top 10 otu_ids and map them in descending order  
     //  so the otu_ids with the most bacteria are last. 
-    var barValues = otuValues.slice(0,10).reverse()
+    var barValues = otuValues.slice(0,10).reverse();
 
-    var yticks = otuIds.slice(0,10).reverse();
+    var yticks = otuIds.map(name =>"OTU " + name).slice(0,10).reverse();
 
     // 8. Create the trace for the bar chart. 
     var barData = [{
       
-      x: barValues
-      y: yticks
+      x: barValues,
+      y: yticks,
 
-      type: "horizontalBar"
-
+      type: "bar",
+      orientation: "h"
     }];
-    
 
     // 9. Create the layout for the bar chart. 
     var barLayout = {
       title: "Top 10 Bacteria Cultures Found"
      
     };
+
+    
+    Plotly.newPlot("bar", barData, barLayout);
+
+    var bubbleData = [{
+      x: otuIds,
+      y: otuValues,
+      text: otuLabels,
+      hovermode: "closest",
+      type: 'scatter',
+      mode: 'markers',
+      
+      marker:{
+        color: otuIds,
+        size: otuValues,
+        colorscale: "YlGnBu"
+      }
+
+    }]
+
+    var bubbleLayout = {
+      title: "Bacteria Cultures Per Sample",
+      xaxis: {title: "OTU ID"}
+    }
     // 10. Use Plotly to plot the data with the layout. 
-    Plotly.newPlot("plotArea",trace);
+    Plotly.newPlot("bubble", bubbleData, bubbleLayout);
+    
+
+    var metadata = data.metadata;
+    // Filter the data for the object with the desired sample number
+    var sampleMetadata = metadata.filter(sampleObj => sampleObj.id == sample)[0];
+    var wFreq = sampleMetadata.wfreq
+
+    var gaugeData = [
+      {
+        type:"indicator",
+        mode:"gauge+number",
+        value: wFreq,
+        title: {text: "<b> Belly Button Washing Frequency </b> <br> Scrubs Per Week"},
+        gauge: { 
+          axis: {range: [0, 10], dtick: "2"}, 
+          bar: {color: "black"},
+          steps:[
+            {range: [0,2], color:"red"},
+            {range: [2, 4], color: "orange"},
+            {range: [4, 6], color: "yellow"},
+            {range: [6, 8], color: "greenyellow"},
+            {range: [8, 10], color: "green"},
+          ],
+        },
+      }
+    ]
+
+    var gaugeLayout = [{
+
+    }]
+
+    Plotly.newPlot("gauge", gaugeData, gaugeLayout);
+    
   });
 }
